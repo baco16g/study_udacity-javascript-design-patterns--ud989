@@ -9,30 +9,31 @@ CatModel.prototype = {
         return Object.assign({}, this._items);
     },
 
-    getVisibleCat: function() {
-        var visibleCats = this._items.cats.filter(function(cat) {
+    getCurrentCat: function() {
+        var currentCats = this._items.cats.filter(function(cat) {
             return cat.visible;
         });
-        return visibleCats;
+        return currentCats;
     },
 
-    incrementCount: function() {
-        var visibleCats = this.getVisibleCat();
-        visibleCats[0].clickCount++;
-        return visibleCats;
+    incrementCounter: function() {
+        var currentCats = this.getCurrentCat();
+        currentCats[0].clickCount++;
+        return currentCats;
     },
 
     changeCat: function(target) {
         var targetId = $(target).data('cat-id');
-        if (targetId === this.getVisibleCat()[0].id) return;
-        this._items.cats.forEach(function(cat) {
-            if (cat.id === targetId) {
-                cat.visible = true;
-            } else {
-                cat.visible = false;
-            }
-        });
-        return this.getVisibleCat();
+        if (targetId !== this.getCurrentCat()[0].id) {
+            this._items.cats.forEach(function(cat) {
+                if (cat.id === targetId) {
+                    cat.visible = true;
+                } else {
+                    cat.visible = false;
+                }
+            });
+        }
+        return this.getCurrentCat();
     },
 }
 
@@ -73,8 +74,8 @@ function CatViewSelector(model, elements) {
     });
 }
 CatViewSelector.prototype = {
-    init: function(visibleCats) {
-        this._visibleCats = visibleCats;
+    init: function(currentCats) {
+        this._currentCats = currentCats;
         this.render();
     },
 
@@ -107,15 +108,15 @@ function CatViewArea(model, elements) {
     });
 }
 CatViewArea.prototype = {
-    init: function(visibleCats) {
-        this.render(visibleCats);
+    init: function(currentCats) {
+        this.render(currentCats);
     },
 
-    render: function(visibleCats) {
-        this._elements.$areaItem.attr('data-cat-id', visibleCats[0].id);
-        this._elements.$areaName.text(visibleCats[0].name);
-        this._elements.$areaTarget.attr('src', visibleCats[0].imgSrc);
-        this._elements.$areaCounter.text(visibleCats[0].clickCount);
+    render: function(currentCats) {
+        this._elements.$areaItem.attr('data-cat-id', currentCats[0].id);
+        this._elements.$areaName.text(currentCats[0].name);
+        this._elements.$areaTarget.attr('src', currentCats[0].imgSrc);
+        this._elements.$areaCounter.text(currentCats[0].clickCount);
     }
 };
 
@@ -129,25 +130,25 @@ function CatController(model, views) {
     this._views = views;
 
     this._views.selector.changeCat.attach(function(sender, args) {
-        _this.changeCat();
+        _this.changeCat(args);
     });
     this._views.area.countTargetClicked.attach(function() {
-        _this.incrementCount();
+        _this.incrementCounter();
     });
 }
 CatController.prototype = {
     init: function() {
-        var visibleCats = this._model.getVisibleCat();
-        this._views.selector.init(visibleCats);
-        this._views.area.init(visibleCats);
+        var currentCats = this._model.getCurrentCat();
+        this._views.selector.init(currentCats);
+        this._views.area.init(currentCats);
     },
 
-    changeCat: function() {
-        _this._views.area.render(_this._model.changeCat(args.target));
+    changeCat: function(args) {
+        this._views.area.render(this._model.changeCat(args.target));
     },
 
-    incrementCount: function() {
-        _this._views.area.render(_this._model.incrementCount());
+    incrementCounter: function() {
+        this._views.area.render(this._model.incrementCounter());
     }
 };
 
