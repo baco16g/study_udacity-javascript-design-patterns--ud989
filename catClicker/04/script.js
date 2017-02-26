@@ -5,8 +5,8 @@ function CatModel(items) {
     this._items = items;
 }
 CatModel.prototype = {
-    getCats: function() {
-        return [].concat(this._items.cats);;
+    getItems: function() {
+        return Object.assign({}, this._items);
     },
 
     getCurrentCat: function() {
@@ -35,7 +35,7 @@ CatModel.prototype = {
         }
         return this.getCurrentCat();
     },
-}
+};
 
 //=================================
 // NOTE: EventDispatcher
@@ -60,10 +60,9 @@ Event.prototype = {
 //=================================
 // NOTE: View
 //=================================
-function CatViewSelector(model, elements) {
+function CatViewSelector(elements) {
     var _this = this;
 
-    this._model = model;
     this._elements = elements;
 
     this.changeCat = new Event(this);
@@ -72,12 +71,12 @@ function CatViewSelector(model, elements) {
     });
 }
 CatViewSelector.prototype = {
-    init: function() {
-        this.render();
+    init: function(itemsCopied) {
+        this.render(itemsCopied);
     },
 
-    render: function() {
-        var cats = this._model.getCats();
+    render: function(itemsCopied) {
+        var cats = itemsCopied.cats;
         var $selectorList = this._elements.$selectorList;
 
         $selectorList.html('');
@@ -87,16 +86,14 @@ CatViewSelector.prototype = {
             $selector.children('button').attr('data-cat-id', cat.id);
             $selectorList.append($selector);
         });
-
     }
 };
 
 ///////////////////////////////////
 
-function CatViewArea(model, elements) {
+function CatViewArea(elements) {
     var _this = this;
 
-    this._model = model;
     this._elements = elements;
 
     this.countTargetClicked = new Event(this);
@@ -105,11 +102,11 @@ function CatViewArea(model, elements) {
     });
 }
 CatViewArea.prototype = {
-    init: function(currentCats) {
-        this.render(currentCats);
+    init: function(itemsCopied, currentCats) {
+        this.render(itemsCopied, currentCats);
     },
 
-    render: function(currentCats) {
+    render: function(itemsCopied, currentCats) {
         this._elements.$areaItem.attr('data-cat-id', currentCats[0].id);
         this._elements.$areaName.text(currentCats[0].name);
         this._elements.$areaTarget.attr('src', currentCats[0].imgSrc);
@@ -136,16 +133,17 @@ function CatController(model, views) {
 CatController.prototype = {
     init: function() {
         var currentCats = this._model.getCurrentCat();
-        this._views.selector.init();
-        this._views.area.init(currentCats);
+        var itemsCopied = this._model.getItems();
+        this._views.selector.init(itemsCopied, currentCats);
+        this._views.area.init(itemsCopied, currentCats);
     },
 
     changeCat: function(args) {
-        this._views.area.render(this._model.changeCat(args.target));
+        this._views.area.render(this._model.getItems(), this._model.changeCat(args.target));
     },
 
     incrementCounter: function() {
-        this._views.area.render(this._model.incrementCounter());
+        this._views.area.render(this._model.getItems(), this._model.incrementCounter());
     }
 };
 
@@ -195,10 +193,10 @@ $(function() {
     };
 
     var catModel        = new CatModel(items);
-    var catViewSelector = new CatViewSelector(catModel, {
+    var catViewSelector = new CatViewSelector({
         $selectorList: $('.p-catClicker__list'),
     });
-    var catViewArea     = new CatViewArea(catModel, {
+    var catViewArea     = new CatViewArea({
         $area: $('.p-catClicker__area'),
         $areaItem: $('.p-catClicker__item'),
         $areaTarget: $('.p-catClicker__target'),
