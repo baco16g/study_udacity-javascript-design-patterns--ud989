@@ -72,8 +72,7 @@ function CatViewSelector(model, elements) {
     });
 }
 CatViewSelector.prototype = {
-    init: function(currentCats) {
-        this._currentCats = currentCats;
+    init: function() {
         this.render();
     },
 
@@ -137,7 +136,7 @@ function CatController(model, views) {
 CatController.prototype = {
     init: function() {
         var currentCats = this._model.getCurrentCat();
-        this._views.selector.init(currentCats);
+        this._views.selector.init();
         this._views.area.init(currentCats);
     },
 
