@@ -5,8 +5,8 @@ function CatModel(items) {
     this._items = items;
 }
 CatModel.prototype = {
-    getItems: function() {
-        return Object.assign({}, this._items);
+    getCats: function() {
+        return [].concat(this._items.cats);;
     },
 
     getCurrentCat: function() {
@@ -66,8 +66,6 @@ function CatViewSelector(model, elements) {
     this._model = model;
     this._elements = elements;
 
-    this._items = this._model.getItems();
-
     this.changeCat = new Event(this);
     this._elements.$selectorList.on('click', 'button', function(e) {
         _this.changeCat.notify({ target: e.target });
@@ -80,11 +78,11 @@ CatViewSelector.prototype = {
     },
 
     render: function() {
-        var catsData = this._items.cats;
+        var cats = this._model.getCats();
         var $selectorList = this._elements.$selectorList;
 
         $selectorList.html('');
-        catsData.forEach(function(cat) {
+        cats.forEach(function(cat) {
             var $selector = $('<li><button></button></li>');
             $selector.children('button').text(cat.name);
             $selector.children('button').attr('data-cat-id', cat.id);
